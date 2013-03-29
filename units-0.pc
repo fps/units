@@ -1,0 +1,10 @@
+prefix=PREFIX
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: units-0
+Description: The units library
+Version: 0.0.1
+Cflags: -I${includedir}/
+Libs: 
