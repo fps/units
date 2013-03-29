@@ -19,6 +19,7 @@ install: all
 	$(SED) -i -e s@PREFIX@$(PREFIX)@g $(PKGCONFIG_DIR)/units-0.pc 
 	$(INSTALL) -d $(INCLUDE_PATH)
 	$(INSTALL) units-0/*.h $(INCLUDE_PATH)
+	$(INSTALL) libunits-0.so $(PREFIX)/lib/
 
 units-0-test: units-test.cc libunits-0.so
 	g++ -I .  -ansi -Wall -g -O0 -o units-0-test  units-test.cc -L . -lunits-0 -Wl,-rpath,.

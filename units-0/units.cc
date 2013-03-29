@@ -104,7 +104,7 @@ namespace units
 				port_flags |= JackPortIsOutput;
 			}
 			
-			std::string port_name = plugin->label() + plugin->port_name(index);
+			std::string port_name = plugin->label() + "-" + plugin->port_name(index);
 			
 			jack_port_t *port = jack_port_register
 			(
@@ -180,12 +180,17 @@ namespace units
 					instance->connect_port
 					(
 						plugin_port_index, 
-						(float*)jack_port_get_buffer(m_jack_ports[port_index], nframes) + frame_index
+						((float*)jack_port_get_buffer(m_jack_ports[port_index], nframes)) + frame_index
 					);
 				}
 				
 				instance->run(1);
 			}
 		}
+	}
+	
+	void ladspa_host::set_input_port_value(unsigned index, float value)
+	{
+		
 	}
 }
