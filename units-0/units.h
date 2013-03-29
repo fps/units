@@ -42,14 +42,12 @@ namespace units
 			ladspamm::plugin_instance_ptr m_instance;
 	};
 	
-	extern "C"
-	{
-		int jack_process(jack_nframes_t nframes, void *arg);
-	}
-	
 	struct host
 	{
-		host(std::string name, bool allow_different_name = true);
+		/*
+			Might throw.
+		*/
+		host(std::string name);
 		
 		~host();
 		
@@ -63,6 +61,9 @@ namespace units
 		
 		protected:
 			std::vector<unit_ptr> m_units;
+			
+			jack_client_t *m_jack_client;
+			jack_status_t m_jack_status;
 	};
 	
 	extern "C"

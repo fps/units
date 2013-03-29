@@ -11,7 +11,7 @@ PKGCONFIG_DIR ?= $(PREFIX)/lib/pkgconfig
 all: libunits-0.so units-0-test
 
 libunits-0.so: units-0/units.cc units-0/units.h
-	g++ -I . -fPIC -shared -o libunits-0.so units-0/units.cc
+	g++ -I . -fPIC -shared -o libunits-0.so units-0/units.cc `pkg-config jack --cflags --libs`
 
 install: all
 	$(INSTALL) -d $(PKGCONFIG_DIR)
@@ -20,12 +20,12 @@ install: all
 	$(INSTALL) -d $(INCLUDE_PATH)
 	$(INSTALL) units-0/*.h $(INCLUDE_PATH)
 
-units-0-test: units-test.cc
-	g++ -I .  -ansi -Wall -g -O0 -o units-0-test  units-test.cc -L . -lunits-0
+units-0-test: units-test.cc libunits-0.so
+	g++ -I .  -ansi -Wall -g -O0 -o units-0-test  units-test.cc -L . -lunits-0 -Wl,-rpath,.
 
 docs:
 	doxygen
 
 clean:
-	rm -f units-0-test
+	rm -f units-0-test libunits-0.so
 	
