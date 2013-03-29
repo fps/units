@@ -164,8 +164,8 @@ namespace units
 		{
 			for 
 			(
-				unsigned port_index = port_start_index, max_port_index = port_end_index; 
-				port_index < max_port_index; 
+				unsigned port_index = port_start_index; 
+				port_index < port_end_index; 
 				++port_index
 			)
 			{
@@ -188,4 +188,10 @@ namespace units
 			}
 		}
 	}
+	
+	void ladspa_host::set_input_port_value(unsigned index, float value)
+	{
+		
+	}
+
 }
