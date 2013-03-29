@@ -3,76 +3,62 @@
 
 #include <vector>
 #include <string>
+#include <map>
+#include <utility>
+
 #include <boost/shared_ptr.hpp>
-#include <boost/iterator/iterator_concepts.hpp>
-#include <ladspamm-0/plugin.h>
-#include <ladspamm-0/plugin_instance.h>
+
 #include <jack/jack.h>
+
+namespace ladspamm
+{
+	struct plugin_instance;
+}
 
 namespace units
 {
-	struct port
-	{
-		std::string name;
-		
-		enum { input, output } direction;
-	};
-	
-	struct unit
-	{
-		virtual unsigned number_of_ports() = 0;
-
-		virtual struct port port(unsigned index) = 0;
-		
-		virtual void process(jack_nframes_t nframes) = 0;
-		
-		virtual ~unit()
-		{
-			
-		}
-	};
-	
-	typedef boost::shared_ptr<unit> unit_ptr;
-	
-	struct ladspa_unit
-	{
-		ladspa_unit(const ladspamm::plugin_ptr& plugin);
-		
-		protected:
-			ladspamm::plugin_instance_ptr m_instance;
-	};
-	
-	struct host
+	struct ladspa_host
 	{
 		/*
-			Might throw.
+			Note: Might throw.
 		*/
-		host(std::string name);
+		ladspa_host
+		(
+			const std::string& jack_client_name,
+			const std::vector<std::pair<std::string, std::string> >& plugins
+		);
 		
-		~host();
+		~ladspa_host();
 		
-		void add_unit(unit_ptr unit);
+		/*
+			This value will only be used if the port
+			is not connected. 
+			
+			Note: Might throw.
+		*/
+		void set_input_port_value(unsigned index, float value);
 		
-		unsigned number_of_units();
-		
-		void remove_unit(unsigned index);
-
 		int process(jack_nframes_t nframes);
 		
 		protected:
-			std::vector<unit_ptr> m_units;
-			
 			jack_client_t *m_jack_client;
+			
 			jack_status_t m_jack_status;
+			
+			std::vector<jack_port_t *> m_jack_ports;
+			
+			std::vector<float> m_input_port_values;
+			
+			std::vector<boost::shared_ptr<ladspamm::plugin_instance> > m_plugin_instances;
+			
+			void setup_plugins(const std::vector<std::pair<std::string, std::string> >& plugins);
+			
+			void setup_plugin(const std::pair<std::string, std::string> &plugin);
+			
+			void setup_ports_and_values(const boost::shared_ptr<ladspamm::plugin_instance> &instance);
+			
+			void process_plugin(unsigned index, jack_nframes_t nframes);
 	};
-	
-	extern "C"
-	{
-		int jack_process(jack_nframes_t nframes, void* arg)
-		{
-			return ((host*)arg)->process(nframes);
-		}
-	}
 }
 
 #endif

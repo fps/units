@@ -11,7 +11,7 @@ PKGCONFIG_DIR ?= $(PREFIX)/lib/pkgconfig
 all: libunits-0.so units-0-test
 
 libunits-0.so: units-0/units.cc units-0/units.h
-	g++ -I . -fPIC -shared -o libunits-0.so units-0/units.cc `pkg-config jack --cflags --libs`
+	g++ -O3 -I . -fPIC -shared -o libunits-0.so units-0/units.cc `pkg-config jack ladspamm-0 --cflags --libs`
 
 install: all
 	$(INSTALL) -d $(PKGCONFIG_DIR)
