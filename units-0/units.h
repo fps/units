@@ -57,7 +57,13 @@ namespace units
 			
 			void setup_ports_and_values(const boost::shared_ptr<ladspamm::plugin_instance> &instance);
 			
-			void process_plugin(unsigned index, jack_nframes_t nframes);
+			void process_plugin
+			(
+				unsigned plugin_index, 
+				unsigned port_start_index, 
+				unsigned port_end_index, 
+				jack_nframes_t nframes
+			);
 	};
 }
 

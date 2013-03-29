@@ -92,10 +92,10 @@ namespace units
 		for (unsigned index = 0; index < plugin->port_count(); ++index)
 		{
 			unsigned long port_flags = 0;
+			m_input_port_values.push_back(instance->port_default_guessed(index));
+
 			if (plugin->port_is_input(index))
 			{
-				m_input_port_values.push_back(instance->port_default_guessed(index));
-				
 				port_flags |= JackPortIsInput;
 			}
 			
@@ -114,6 +114,13 @@ namespace units
 				port_flags,
 				0
 			);
+			
+			if (NULL == port)
+			{
+				throw std::runtime_error("Failed to register port");
+			}
+			
+			m_jack_ports.push_back(port);
 		}
 	}
 
@@ -127,19 +134,58 @@ namespace units
 	
 	int ladspa_host::process(jack_nframes_t nframes)
 	{
-		for (unsigned index = 0; index < m_plugin_instances.size(); ++index)
+		for (unsigned plugin_index = 0, port_start_index = 0; plugin_index < m_plugin_instances.size(); ++plugin_index)
 		{
-			process_plugin(index, nframes);
+			process_plugin
+			(
+				plugin_index, 
+				port_start_index, 
+				port_start_index + m_plugin_instances[plugin_index]->the_plugin->port_count(),
+				nframes
+			);
+			
+			port_start_index += m_plugin_instances[plugin_index]->the_plugin->port_count();
 		}
 		
 		return 0;
 	}
 	
-	void ladspa_host::process_plugin(unsigned index, jack_nframes_t nframes)
+	void ladspa_host::process_plugin
+	(
+		unsigned plugin_index, 
+		unsigned port_start_index, 
+		unsigned port_end_index, 
+		jack_nframes_t nframes
+	)
 	{
-		for (unsigned frame = 0; frame < nframes; ++frame)
+		ladspamm::plugin_instance_ptr instance = m_plugin_instances[plugin_index];
+		
+		for (unsigned frame_index = 0; frame_index < nframes; ++frame_index)
 		{
-			
+			for 
+			(
+				unsigned port_index = port_start_index, max_port_index = port_end_index; 
+				port_index < max_port_index; 
+				++port_index
+			)
+			{
+				const unsigned plugin_port_index = port_index - port_start_index;
+				
+				if (0 == jack_port_connected(m_jack_ports[port_index]))
+				{
+					instance->connect_port(plugin_port_index, &m_input_port_values[port_index]);
+				}
+				else
+				{
+					instance->connect_port
+					(
+						plugin_port_index, 
+						(float*)jack_port_get_buffer(m_jack_ports[port_index], nframes) + frame_index
+					);
+				}
+				
+				instance->run(1);
+			}
 		}
 	}
 }
