@@ -74,6 +74,7 @@ namespace units
 					)
 				);
 				
+				instance->activate();
 				m_plugin_instances.push_back(instance);
 			
 				setup_ports_and_values(instance);
@@ -92,19 +93,20 @@ namespace units
 		for (unsigned index = 0; index < plugin->port_count(); ++index)
 		{
 			unsigned long port_flags = 0;
-			m_input_port_values.push_back(instance->port_default_guessed(index));
 
 			if (plugin->port_is_input(index))
 			{
 				port_flags |= JackPortIsInput;
+				m_port_values.push_back(instance->port_default_guessed(index));
 			}
 			
 			if (plugin->port_is_output(index))
 			{
 				port_flags |= JackPortIsOutput;
+				m_port_values.push_back(0);
 			}
 			
-			std::string port_name = plugin->label() + plugin->port_name(index);
+			std::string port_name = plugin->label() + "-" + plugin->port_name(index);
 			
 			jack_port_t *port = jack_port_register
 			(
@@ -173,14 +175,14 @@ namespace units
 				
 				if (0 == jack_port_connected(m_jack_ports[port_index]))
 				{
-					instance->connect_port(plugin_port_index, &m_input_port_values[port_index]);
+					instance->connect_port(plugin_port_index, &m_port_values[port_index]);
 				}
 				else
 				{
 					instance->connect_port
 					(
 						plugin_port_index, 
-						(float*)jack_port_get_buffer(m_jack_ports[port_index], nframes) + frame_index
+						((float*)jack_port_get_buffer(m_jack_ports[port_index], nframes)) + frame_index
 					);
 				}
 				
@@ -193,5 +195,4 @@ namespace units
 	{
 		
 	}
-
 }

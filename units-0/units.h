@@ -47,7 +47,7 @@ namespace units
 			
 			std::vector<jack_port_t *> m_jack_ports;
 			
-			std::vector<float> m_input_port_values;
+			std::vector<float> m_port_values;
 			
 			std::vector<boost::shared_ptr<ladspamm::plugin_instance> > m_plugin_instances;
 			
